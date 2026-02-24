@@ -1,10 +1,12 @@
 import { motion, useScroll, useTransform } from "motion/react";
-import dbsLogo from ".../../assets/986bd69e2ded8ce9884dcdf5ad54fc68e89b288d.png";
-import grabLogo from ".../../assets/b73c3129b3edbaba500d75ea9064151fc393a62b.png";
-import chubbLogo from ".../../assets/5b3c04f1bb037738e9bd7cf8706a9508580467df.png";
-import techcombankLogo from ".../../assets/c5b42687f57b0a8b8237b4a66178683f34099de7.png";
-import krungthaiBankLogo from ".../../assets/9925eff1fe574bc48a41eee64a05ed6d37102c60.png";
-import sparkNZLogo from ".../../assets/f5bb81503adf5122c455bc470daa0f743fed41f0.png";
+import dbsLogo from "/Users/wownoob/Documents/Projects/TEHDS/portfolio/src/assets/986bd69e2ded8ce9884dcdf5ad54fc68e89b288d.png";
+import grabLogo from "/Users/wownoob/Documents/Projects/TEHDS/portfolio/src/assets/b73c3129b3edbaba500d75ea9064151fc393a62b.png";
+import chubbLogo from "/Users/wownoob/Documents/Projects/TEHDS/portfolio/src/assets/5b3c04f1bb037738e9bd7cf8706a9508580467df.png";
+import techcombankLogo from "/Users/wownoob/Documents/Projects/TEHDS/portfolio/src/assets/assets/c5b42687f57b0a8b8237b4a66178683f34099de7.png";
+import krungthaiBankLogo from "/Users/wownoob/Documents/Projects/TEHDS/portfolio/src/assets/assets/9925eff1fe574bc48a41eee64a05ed6d37102c60.png";
+import sparkNZLogo from "/Users/wownoob/Documents/Projects/TEHDS/portfolio/src/assets/f5bb81503adf5122c455bc470daa0f743fed41f0.png";
+
+
 
 const companies = [
   {
