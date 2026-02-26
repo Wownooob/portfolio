@@ -40,8 +40,9 @@ export function CaseStudy({
         scale,
         opacity,
         y,
+        position: "relative",
       }}
-      className="min-h-screen flex items-center justify-center px-8 py-20 relative"
+      className="min-h-screen flex items-center justify-center px-8 py-20"
     >
       <div className="max-w-7xl w-full">
         <div className="grid md:grid-cols-2 gap-12 items-center">

@@ -85,7 +85,12 @@ export default function App() {
       <CustomCursor />
       <BackgroundIllustrations />
       <Navigation />
-      <ProgressTracker totalStudies={caseStudies.length} />
+      <ProgressTracker
+        sections={[
+          { label: "Home" },
+          ...caseStudies.map((s) => ({ label: s.title })),
+        ]}
+      />
       
       <Hero />
       

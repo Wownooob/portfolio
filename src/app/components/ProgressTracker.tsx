@@ -1,89 +1,135 @@
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
-interface ProgressTrackerProps {
-  totalStudies: number;
+interface Section {
+  label: string;
 }
 
-export function ProgressTracker({ totalStudies }: ProgressTrackerProps) {
+interface ProgressTrackerProps {
+  sections: Section[];
+}
+
+export function ProgressTracker({ sections }: ProgressTrackerProps) {
+  // Index 0 = Hero, 1..n = case studies
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
-      const workSection = document.getElementById('work');
-      if (!workSection) return;
+      const workSection = document.getElementById("work");
+      const footerEl = document.querySelector("footer");
 
-      // Check if work section is in view to show/hide tracker
-      const workSectionTop = workSection.offsetTop;
-      const scrollPosition = window.scrollY;
+      const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
-      
-      // Show tracker when user scrolls to work section
-      setIsVisible(scrollPosition + windowHeight / 2 > workSectionTop);
+      const scrollCenter = scrollY + windowHeight / 2;
 
-      // Find all case study sections using data attribute
-      const sections = workSection.querySelectorAll('[data-case-study-index]');
-      const scrollCenter = scrollPosition + windowHeight / 2;
+      // Hide when footer is in view
+      if (footerEl) {
+        const footerTop = footerEl.getBoundingClientRect().top + scrollY;
+        if (scrollCenter >= footerTop) {
+          setIsVisible(false);
+          return;
+        }
+      }
 
-      sections.forEach((section) => {
-        const element = section as HTMLElement;
-        const index = parseInt(element.getAttribute('data-case-study-index') || '0');
-        const sectionTop = element.offsetTop;
-        const sectionBottom = sectionTop + element.offsetHeight;
+      setIsVisible(true);
 
-        if (scrollCenter >= sectionTop && scrollCenter < sectionBottom) {
-          setActiveIndex(index);
+      // Determine active dot
+      if (!workSection) {
+        // No work section yet — must be hero
+        setActiveIndex(0);
+        return;
+      }
+
+      const workTop = workSection.getBoundingClientRect().top + scrollY;
+
+      // If scroll center is above the work section → hero dot
+      if (scrollCenter < workTop) {
+        setActiveIndex(0);
+        return;
+      }
+
+      // Otherwise check each case study (dots 1..n)
+      const caseSections = workSection.querySelectorAll("[data-case-study-index]");
+
+      let newActiveIndex = 1; // Default to first case study if in work section
+      caseSections.forEach((section) => {
+        const el = section as HTMLElement;
+        const idx = parseInt(el.getAttribute("data-case-study-index") || "0");
+        const top = el.getBoundingClientRect().top + scrollY;
+        const bottom = top + el.offsetHeight;
+
+        if (scrollCenter >= top && scrollCenter < bottom) {
+          newActiveIndex = idx + 1; // +1 because index 0 is hero
         }
       });
+
+      setActiveIndex(newActiveIndex);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // run on mount
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleDotClick = (index: number) => {
-    const workSection = document.getElementById('work');
+    if (index === 0) {
+      // Hero — scroll to top
+      const start = window.pageYOffset;
+      const duration = 1200;
+      let startTime: number | null = null;
+
+      const easeInOutCubic = (t: number) =>
+        t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+
+      const animate = (now: number) => {
+        if (!startTime) startTime = now;
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        window.scrollTo(0, start * (1 - easeInOutCubic(progress)));
+        if (elapsed < duration) requestAnimationFrame(animate);
+      };
+
+      requestAnimationFrame(animate);
+      return;
+    }
+
+    // Case study dot — index 1 maps to case study 0, etc.
+    const workSection = document.getElementById("work");
     if (!workSection) return;
 
-    const sections = workSection.querySelectorAll('[data-case-study-index]');
-    const targetSection = sections[index] as HTMLElement;
-    
-    if (targetSection) {
-      const targetPosition = targetSection.offsetTop;
-      const startPosition = window.pageYOffset;
-      const distance = targetPosition - startPosition;
-      const duration = 1500;
-      let start: number | null = null;
+    const caseSections = workSection.querySelectorAll("[data-case-study-index]");
+    const targetEl = caseSections[index - 1] as HTMLElement;
+    if (!targetEl) return;
 
-      const easeInOutCubic = (t: number) => {
-        return t < 0.5
-          ? 4 * t * t * t
-          : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-      };
+    const targetPosition = targetEl.getBoundingClientRect().top + window.pageYOffset;
+    const startPosition = window.pageYOffset;
+    const distance = targetPosition - startPosition;
+    const duration = 1500;
+    let startTime: number | null = null;
 
-      const animation = (currentTime: number) => {
-        if (start === null) start = currentTime;
-        const timeElapsed = currentTime - start;
-        const progress = Math.min(timeElapsed / duration, 1);
-        const ease = easeInOutCubic(progress);
-        
-        window.scrollTo(0, startPosition + distance * ease);
-        
-        if (timeElapsed < duration) {
-          requestAnimationFrame(animation);
-        }
-      };
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
 
-      requestAnimationFrame(animation);
-    }
+    const animate = (now: number) => {
+      if (!startTime) startTime = now;
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      window.scrollTo(0, startPosition + distance * easeInOutCubic(progress));
+      if (elapsed < duration) requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
   };
 
   return (
-    <div className={`fixed right-8 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-4 transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-      {Array.from({ length: totalStudies }).map((_, index) => (
+    <div
+      className={`fixed right-8 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-4 transition-opacity duration-500 ${
+        isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
+    >
+      {sections.map((section, index) => (
         <motion.button
           key={index}
           onClick={() => handleDotClick(index)}
@@ -94,19 +140,17 @@ export function ProgressTracker({ totalStudies }: ProgressTrackerProps) {
           <motion.div
             className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
               activeIndex === index
-                ? 'bg-[#F5F5DC] border-[#F5F5DC] scale-125'
-                : 'bg-transparent border-[#F5F5DC]/40 hover:border-[#F5F5DC]/70'
+                ? "bg-[#F5F5DC] border-[#F5F5DC]"
+                : "bg-transparent border-[#F5F5DC]/40 hover:border-[#F5F5DC]/70"
             }`}
-            animate={{
-              scale: activeIndex === index ? 1.25 : 1,
-            }}
+            animate={{ scale: activeIndex === index ? 1.25 : 1 }}
             transition={{ duration: 0.3 }}
           />
-          
-          {/* Tooltip on hover */}
+
+          {/* Tooltip */}
           <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-            <div className="bg-[#F5F5DC] text-[#123524] px-3 py-1 rounded text-sm">
-              Case Study {index + 1}
+            <div className="bg-[#F5F5DC] text-[#123524] px-3 py-1 rounded text-sm font-['Source_Sans_Pro']">
+              {section.label}
             </div>
           </div>
         </motion.button>
